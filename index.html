@@ -338,12 +338,12 @@
                         
                         // Check if message follows our product format
                         if (message.includes('New Product Submission') && 
-                            message.includes('Product Number:') &&
+                            message.includes('Product ID:') &&
                             message.includes('Name:') &&
                             message.includes('Description:')) {
                             
                             // Extract product details from message
-                            const productNumberMatch = message.match(/Product Number:\s*(.+)/);
+                            const productNumberMatch = message.match(/Product ID:\s*(.+)/);
                             const nameMatch = message.match(/Name:\s*(.+)/);
                             const descriptionMatch = message.match(/Description:\s*(.+)/);
                             const linkMatch = message.match(/Link:\s*<a href="([^"]+)">/);
