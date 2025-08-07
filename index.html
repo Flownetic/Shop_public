@@ -132,7 +132,7 @@
         .product-image-container {
             position: relative;
             width: 100%;
-            padding-top: 75%; /* 4:3 aspect ratio */
+            padding-top: 75%;
             overflow: hidden;
         }
         
@@ -331,31 +331,52 @@
             // Parse Telegram messages into product objects
             function parseMessages(messages) {
                 const products = [];
+                const defaultImage = 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80';
                 
                 messages.forEach(update => {
                     if (update.message && update.message.text) {
                         const message = update.message.text;
                         
                         // Check if message follows our product format
-                        if (message.includes('New Product Submission') && 
-                            message.includes('Product ID:') &&
-                            message.includes('Name:') &&
-                            message.includes('Description:')) {
-                            
+                        if (message.includes('🚀 New Product Submission')) {
                             // Extract product details from message
-                            const productNumberMatch = message.match(/Product ID:\s*(.+)/);
-                            const nameMatch = message.match(/Name:\s*(.+)/);
-                            const descriptionMatch = message.match(/Description:\s*(.+)/);
-                            const linkMatch = message.match(/Link:\s*<a href="([^"]+)">/);
-                            const photoMatch = message.match(/Photo:\s*<a href="([^"]+)">/);
+                            const productNumberMatch = message.match(/🔢 Product ID:\s*([^\n]+)/);
+                            const nameMatch = message.match(/📛 Name:\s*([^\n]+)/);
+                            const descriptionMatch = message.match(/📝 Description:\s*([^\n]+)/);
+                            
+                            // Default values
+                            let productLink = '#';
+                            let photoUrl = defaultImage;
+                            
+                            // Extract hidden URLs from message entities
+                            if (update.message.entities) {
+                                update.message.entities.forEach(entity => {
+                                    if (entity.type === 'text_link') {
+                                        const entityText = message.substring(entity.offset, entity.offset + entity.length);
+                                        if (entityText.includes('View Product')) {
+                                            productLink = entity.url;
+                                        } else if (entityText.includes('View Photo')) {
+                                            photoUrl = entity.url;
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            // Check for attached photo if no URL found
+                            if (update.message.photo && photoUrl === defaultImage) {
+                                const photo = update.message.photo[update.message.photo.length - 1];
+                                photoUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${photo.file_id}`;
+                                // Need to make another request to get the actual photo URL
+                                // For now, we'll use the getFile URL directly
+                            }
                             
                             if (productNumberMatch && nameMatch && descriptionMatch) {
                                 products.push({
                                     number: productNumberMatch[1].trim(),
                                     name: nameMatch[1].trim(),
                                     description: descriptionMatch[1].trim(),
-                                    link: linkMatch ? linkMatch[1].trim() : '#',
-                                    photo: photoMatch ? photoMatch[1].trim() : 'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'
+                                    link: productLink,
+                                    photo: photoUrl
                                 });
                             }
                         }
@@ -380,9 +401,9 @@
                 if (searchTerm) {
                     searchTerm = searchTerm.toLowerCase();
                     filteredProducts = products.filter(product => 
-                        product.number.toLowerCase().includes(searchTerm) ||
-                        product.name.toLowerCase().includes(searchTerm) ||
-                        product.description.toLowerCase().includes(searchTerm)
+                        (product.number && product.number.toLowerCase().includes(searchTerm)) ||
+                        (product.name && product.name.toLowerCase().includes(searchTerm)) ||
+                        (product.description && product.description.toLowerCase().includes(searchTerm))
                     );
                     
                     if (filteredProducts.length === 0) {
@@ -442,13 +463,19 @@
             // Search functionality
             searchButton.addEventListener('click', function() {
                 const searchTerm = searchInput.value.trim();
-                fetchProducts(); // Re-fetch and filter
+                fetchProducts().then(() => {
+                    const products = parseMessages(JSON.parse(localStorage.getItem('telegramMessages')) || []);
+                    displayProducts(products, searchTerm);
+                });
             });
             
             searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     const searchTerm = searchInput.value.trim();
-                    fetchProducts(); // Re-fetch and filter
+                    fetchProducts().then(() => {
+                        const products = parseMessages(JSON.parse(localStorage.getItem('telegramMessages')) || []);
+                        displayProducts(products, searchTerm);
+                    });
                 }
             });
             
