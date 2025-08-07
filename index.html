@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .products-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .product-info {
+            padding: 15px;
+        }
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .product-description {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .product-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+        .error {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Our Products</h1>
+        <div id="productsContainer" class="products-container">
+            <div class="loading">Loading products...</div>
+        </div>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const container = document.getElementById('productsContainer');
+            
+            try {
+                // Get messages from Telegram bot (in a real app, you'd need a server-side component)
+                // Note: This is a simplified approach. In production, you'd need a backend to securely
+                // fetch messages as Telegram API requires the bot token to be kept secret.
+                
+                // For demo purposes, we'll simulate getting products
+                // In reality, you would need to:
+                // 1. Have a server endpoint that fetches messages from Telegram using your bot token
+                // 2. Parse those messages to extract product data
+                // 3. Send only the necessary data to the frontend
+                
+                // Simulated products (replace with actual Telegram API call in production)
+                const simulatedProducts = [
+                    {
+                        name: "Sample Product 1",
+                        description: "This is a sample product description.",
+                        price: "19.99",
+                        image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+                        timestamp: "2023-01-01T00:00:00Z"
+                    },
+                    {
+                        name: "Sample Product 2",
+                        description: "Another sample product with a longer description to show how it might look in the card.",
+                        price: "29.99",
+                        image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+                        timestamp: "2023-01-02T00:00:00Z"
+                    }
+                ];
+                
+                // In a real implementation, you would replace the above with:
+                // const response = await fetch('YOUR_BACKEND_ENDPOINT_THAT_FETCHES_TELEGRAM_MESSAGES');
+                // const products = await response.json();
+                
+                displayProducts(simulatedProducts);
+            } catch (error) {
+                console.error('Error loading products:', error);
+                container.innerHTML = '<div class="error">Failed to load products. Please try again later.</div>';
+            }
+        });
+        
+        function displayProducts(products) {
+            const container = document.getElementById('productsContainer');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div class="loading">No products found.</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-description">${product.description}</div>
+                        <div class="product-price">$${product.price}</div>
+                    </div>
+                `;
+                
+                container.appendChild(productCard);
+            });
+        }
+    </script>
+</body>
+</html>
